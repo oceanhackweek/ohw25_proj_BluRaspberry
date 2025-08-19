@@ -1,8 +1,5 @@
-# ohwyy_proj_template
-
-Template for starting Oceanhackweek project repos. 
-
-This repo is an example of how teams can structure their project repositories and format their project README.md file, but feel free to adapt as suits your needs.
+# BluRaspberry
+Optimal AUV Path Planning Using Numerical Ocean Models
 
 **Folder Structure**
 
@@ -17,9 +14,8 @@ preserve relative paths, but the dataset does not need to be added to git/GitHub
 
 You can start with a simple structure and as you progress you can refine it to contain more components. [Here](https://cookiecutter-data-science.drivendata.org/#directory-structure) is an example of a more elaborate structure for a data science project.
 
-## Project Name
-
 ## One-line Description
+Our goal is to develop a system that specifies an optimal path for an AUV using numerical circulation models.
 
 ## Planning
 
@@ -27,24 +23,43 @@ You can start with a simple structure and as you progress you can refine it to c
 
 | Name                | Role                |
 |---------------------|---------------------|
-| Participant 1       | Project Facilitator |
-| Participant 2       | Participant         |
-| Participant 3       | Participant         |
+| Erin Linebarger     | Project Facilitator |
+| Joyce Cai           | Participant         |
+| Christian Sarason   | Participant         |
+| Kayla Mitchell      | Participant         |
 
 ## Planning
 
 * Initial idea: "short description"
 * Ideation jam board: Add link
 * Ideation Presentation: Add link
-* Slack channel: ohw25_proj_name
+* Slack channel: #ohw25_proj_blu_raspberry
 * Project google drive: Add link
 * Final presentation: Add link
 
 ## Background
 
 ## Goals
+**Optimization Function for Path Planning**
+- Develop an algorithm that dynamically adjusts AUV navigation points to maximize sampling efficiency of biological targets (e.g., algal blooms).
+- Incorporate environmental variables such as currents, temperature, salinity, oxygen utilization, water age, and seafloor distribution.
 
-## Datasets
+**Integration with Robotic Control Systems**
+- Build scripts to interface between Python-based optimization functions and ROS2, potential enabling direct deployment on AUV platforms.
+- Ensure compatibility with Gazebo for simulation testing.
+
+**Scalable Cloud Implementation**
+- Run scripts on large oceanographic datasets in cloud environments .
+
+
+## Datasets and Methodology
+**AUV Control and Simulation**
+- ROS2
+- Gazebo
+
+**Simulated Ocean field**
+- OCIM (Ocean Circulation Inverse Model)
+- ROMs
 
 ## Workflow/Roadmap
 
