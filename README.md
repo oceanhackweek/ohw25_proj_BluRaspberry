@@ -23,10 +23,10 @@ Our goal is to develop a system that specifies an optimal path for an AUV using 
 
 | Name                | Role                |
 |---------------------|---------------------|
-| Erin Linebarger     | Project Facilitator |
+| Erin Linebarger     | Participant         |
 | Joyce Cai           | Participant         |
-| Christian Sarason   | Participant         |
 | Kayla Mitchell      | Participant         |
+| Christian Sarason   | Project Facilitator |
 
 ## Planning
 
