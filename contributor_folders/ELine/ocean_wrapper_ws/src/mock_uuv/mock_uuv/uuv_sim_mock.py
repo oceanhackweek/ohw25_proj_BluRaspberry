@@ -12,9 +12,22 @@ from builtin_interfaces.msg import Time as RosTime
 from std_msgs.msg import String, Float64, UInt32
 from sensor_msgs.msg import NavSatFix, NavSatStatus, BatteryState
 
+import mock_uuv.vertical_lawnmower as lawnmower
+
 DEG_LAT_M = 111_111.0  # meters per degree latitude (approx)
 def meters_to_deg_lat(m): return m / DEG_LAT_M
 def meters_to_deg_lon(m, lat_deg): return m / (DEG_LAT_M * max(0.1, math.cos(math.radians(lat_deg))))
+
+R_EARTH_M = 6_371_000.0
+
+def haversine_m(lat1, lon1, lat2, lon2):
+    """Great-circle distance in meters (horizontal only)."""
+    import math
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = phi2 - phi1
+    dlmb = math.radians(lon2 - lon1)
+    a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlmb/2)**2
+    return 2.0 * R_EARTH_M * math.asin(math.sqrt(a))
 
 class MockUUVNode(Node):
     """
@@ -29,7 +42,7 @@ class MockUUVNode(Node):
         self.declare_parameter('start_lat', 33.810313)
         self.declare_parameter('start_lon', -118.393867)
         self.declare_parameter('start_heading_deg', 90.0)     # east
-        self.declare_parameter('speed_mps', 0.8)               # cruise speed
+        self.declare_parameter('speed_mps', 100.0)               # cruise speed
         self.declare_parameter('rel_alt_m', -2.0)              # UUV depth = negative altitude
         self.declare_parameter('battery_start_v', 15.8)        # 4S full-ish
         self.declare_parameter('battery_min_v', 13.2)
@@ -80,6 +93,7 @@ class MockUUVNode(Node):
         self.last_log_ms = 0
         self.speed_filter = self.speed_mps  # used for reporting
 
+
         # ---------------- Publishers ----------------
         self.pub_capabilities = self.create_publisher(String, '/task_manager/capabilities', 10)
         self.pub_status       = self.create_publisher(String, '/task_manager/rest_status', 10)
@@ -102,8 +116,6 @@ class MockUUVNode(Node):
         self.create_timer(0.10, self.tick_10hz)   # 10 Hz
         # Status + log cadence
         self.create_timer(1.0, self.tick_1hz)     # 1 Hz
-        # Capabilities heartbeat
-        self.create_timer(10.0, self.publish_capabilities)  # 0.1 Hz
 
         # Publish initial capabilities immediately
         self.publish_capabilities()
@@ -117,6 +129,9 @@ class MockUUVNode(Node):
         self.pub_capabilities.publish(String(data=self.capabilities_json))
 
     def publish_status(self):
+        # Distance from mission origin (horizontal only) for HUD
+        self.distance_m = haversine_m(self.home[0], self.home[1], self.lat, self.lon)
+
         status = {
             "status": self.status,
             "num_cameras": self.num_cameras,
@@ -169,34 +184,84 @@ class MockUUVNode(Node):
         msg.percentage = max(0.0, min(1.0, (self.batt_v - self.batt_min_v) / (self.get_parameter('battery_start_v').value - self.batt_min_v)))
         self.pub_battery.publish(msg)
 
+    # ----------------- Waypoint helpers -----------------
+    def adjust_waypoint(self, lat, lon, depth):
+        depth = max(0.0, depth)
+        return round(lat, 6), round(lon, 6), depth
+
+    def start_lawnmower(self, waypoints):
+        self.current_waypoints = waypoints
+        self.current_wp_index = 0
+        self.status = "MISSION"
+        self.mission_active = True
+
+    # ----------------- Modified sim_motion -----------------
     def sim_motion(self, dt):
-        # no motion if estopped or paused
-        if self.estopped or self.status in ("paused", "rtl_landed"):
+        if self.estopped or self.status.lower() in ("pause", "land", "ready"):
             self.speed_filter = max(0.0, 0.9 * self.speed_filter)
             return
 
-        # mild random walk if idle; steady if mission_active
-        speed_cmd = self.speed_mps if self.mission_active else 0.2
-        # tiny heading wander when idle
-        if not self.mission_active:
+        if self.mission_active and self.current_wp_index < len(self.current_waypoints):
+            # get target waypoint
+            tgt_lat, tgt_lon, tgt_depth = self.current_waypoints[self.current_wp_index]
+            tgt_lat, tgt_lon, tgt_depth = self.adjust_waypoint(tgt_lat, tgt_lon, tgt_depth)
+
+            # compute local ENU deltas (meters)
+            dx = (tgt_lon - self.lon) * DEG_LAT_M * math.cos(math.radians(self.lat))
+            dy = (tgt_lat - self.lat) * DEG_LAT_M
+            dz = tgt_depth - abs(self.rel_alt_m)   # rel_alt_m is negative depth
+
+            dist_horiz = math.hypot(dx, dy)
+            dist_3d = math.sqrt(dx*dx + dy*dy + dz*dz)
+
+            if dist_3d < 200.0:  # reached waypoint# when you reach a waypoint
+
+                # just after choosing the new target (or at the top of the loop)
+                if self.mission_active and self.current_wp_index < len(self.current_waypoints):
+                    nxt = self.current_waypoints[self.current_wp_index]
+
+                    self.current_wp_index += 1
+                    if self.current_wp_index >= len(self.current_waypoints):
+                        self.publish_log("Mission complete", "info")
+                        self.status = "MISSION_COMPLETE"
+                        self.mission_active = False
+                    return
+
+            # direction toward target
+            self.heading_deg = math.degrees(math.atan2(dy, dx)) % 360.0
+
+            # move horizontally at speed_mps
+            vx = self.speed_mps * math.cos(math.radians(self.heading_deg))
+            vy = self.speed_mps * math.sin(math.radians(self.heading_deg))
+            dlon = meters_to_deg_lon(vx * dt, self.lat)
+            dlat = meters_to_deg_lat(vy * dt)
+            self.lon += dlon
+            self.lat += dlat
+
+            # vertical motion: chase tgt_depth at same speed
+            climb_rate = self.speed_mps  # m/s
+            depth_step = climb_rate * dt
+            cur_depth = abs(self.rel_alt_m)
+            if abs(tgt_depth - cur_depth) <= depth_step:
+                cur_depth = tgt_depth
+            else:
+                cur_depth += math.copysign(depth_step, tgt_depth - cur_depth)
+            self.rel_alt_m = -cur_depth
+
+            # track distance
+            self.distance_m += self.speed_mps * dt
+            self.speed_filter = 0.8 * self.speed_filter + 0.2 * self.speed_mps
+        else:
+            # idle random walk
+            speed_cmd = 0.2
             self.heading_deg += random.uniform(-2.0, 2.0) * dt
+            vx = speed_cmd * math.cos(math.radians(self.heading_deg))
+            vy = speed_cmd * math.sin(math.radians(self.heading_deg))
+            self.lon += meters_to_deg_lon(vx * dt, self.lat)
+            self.lat += meters_to_deg_lat(vy * dt)
+            self.distance_m += speed_cmd * dt
+            self.speed_filter = 0.8 * self.speed_filter + 0.2 * speed_cmd
 
-        # clamp heading
-        while self.heading_deg < 0: self.heading_deg += 360.0
-        while self.heading_deg >= 360.0: self.heading_deg -= 360.0
-
-        # integrate
-        vx = speed_cmd * math.cos(math.radians(self.heading_deg))
-        vy = speed_cmd * math.sin(math.radians(self.heading_deg))
-        dlon = meters_to_deg_lon(vx * dt, self.lat)
-        dlat = meters_to_deg_lat(vy * dt)
-
-        self.lon += dlon
-        self.lat += dlat
-        self.distance_m += max(0.0, speed_cmd * dt)
-
-        # report speed with a little smoothing
-        self.speed_filter = 0.8 * self.speed_filter + 0.2 * speed_cmd
 
     # ----------------- Timers -----------------
     def tick_10hz(self):
@@ -220,8 +285,8 @@ class MockUUVNode(Node):
         self.publish_status()
 
         # periodic log heartbeat
-        if random.random() < 0.25:
-            self.publish_log(f"tick — lat={self.lat:.6f} lon={self.lon:.6f} spd={self.speed_filter:.2f}m/s", "info")
+        # if random.random() < 0.25:
+        #     self.publish_log(f"tick — lat={self.lat:.6f} lon={self.lon:.6f} spd={self.speed_filter:.2f}m/s", "info")
 
     # ----------------- Subscribers -----------------
     def on_run_mission(self, msg: String):
@@ -233,18 +298,42 @@ class MockUUVNode(Node):
 
         self.mission_active = True
         self.estopped = False
-        # Optionally accept a heading or path from payload
-        hdg = payload.get("heading_deg")
-        if isinstance(hdg, (int, float)):
-            self.heading_deg = float(hdg)
 
-        # Optional speed override
-        spd = payload.get("speed_mps")
-        if isinstance(spd, (int, float)) and spd >= 0.0:
-            self.speed_mps = float(spd)
+        # --- extract polyline from payload ---
+        polyline_raw = payload.get("polyline", [])
+        polyline = [(p["lat"], p["lon"]) for p in polyline_raw if "lat" in p and "lon" in p]
 
+        all_waypoints = lawnmower.generate_vertical_lawnmower(
+            polyline=polyline,
+            depth_min=0.0,
+            depth_max=1000.0,                 # try something modest first
+            horizontal_leg_spacing=300.0,   # meters along the polyline between stations
+            vertical_point_spacing=500.0,     # meters between depth samples
+            start_down=True
+        )
+        # after generating waypoints
+        def summarize(wps, n=24):
+            ss = []
+            for i,(la,lo,d) in enumerate(wps[:n]):
+                ss.append(f"{i}:{la:.6f},{lo:.6f},{d:.1f}")
+            return " | ".join(ss) + (f" ... [{len(wps)} total]" if len(wps)>n else "")
+
+
+        self.current_wp_index = 0
+        self.start_lawnmower(all_waypoints)
+        
         self.publish_log(f"Mission start: {payload}", "info")
         self.get_logger().info(f"Received /frontend/run_mission: {payload}")
+
+    def generate_vertical_steps(self, lat, lon, depth_start, depth_end, step_m=5.0):
+        depth_steps = []
+        depth = depth_start
+        while True:
+            depth_steps.append((lat, lon, depth))
+            if abs(depth - depth_end) < step_m:
+                break
+            depth += math.copysign(step_m, depth_end - depth)
+        return depth_steps
 
     def on_toggle_module(self, msg: String):
         # Flip capability enabled state by name
