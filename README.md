@@ -5,7 +5,7 @@ Optimal unmanned underwater vehicle (UUV) Path Planning Using Numerical Ocean Mo
 * `final_notebooks` Notebook that you can check out if you interested in the process or reproduce what we did.
 * `data` Dataset can be shared here.
 
-<!--More elaborate structure for a data science project: [Here](https://cookiecutter-data-science.drivendata.org/#directory-structure) is an example of a more elaborate structure for a data science project.>
+<!--More elaborate structure for a data science project: [Here](https://cookiecutter-data-science.drivendata.org/#directory-structure) is an example of a more elaborate structure for a data science project.-->
 
 ## One-line Description
 We aim to develop a system that determine the optimal path for an AUV to explore biologically active regions (e.g., algal blooms).
