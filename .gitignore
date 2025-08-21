@@ -1,7 +1,7 @@
-contributor_folders/ELine/.env
+contributor_folders/ELine/.env/*
 
-contributer_folders/ELine/ocean_wrapper_ws/build/
-contributer_folders/ELine/ocean_wrapper_ws/install/
-contributer_folders/ELine/ocean_wrapper_ws/log/
+contributer_folders/ELine/ocean_wrapper_ws/build/*
+contributer_folders/ELine/ocean_wrapper_ws/install/*
+contributer_folders/ELine/ocean_wrapper_ws/log/*
 
-contributer_folders/ELine/.vscode
+contributer_folders/ELine/.vscode/*
