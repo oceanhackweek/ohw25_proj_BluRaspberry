@@ -13,6 +13,7 @@ from std_msgs.msg import String, Float64, UInt32
 from sensor_msgs.msg import NavSatFix, NavSatStatus, BatteryState
 
 import mock_uuv.vertical_lawnmower as lawnmower
+import mock_uuv.optimal_waypoint as optimal_waypoint
 
 DEG_LAT_M = 111_111.0  # meters per degree latitude (approx)
 def meters_to_deg_lat(m): return m / DEG_LAT_M
@@ -81,6 +82,8 @@ class MockUUVNode(Node):
         self.gps_sat_min = int(self.get_parameter('gps_sat_min').value)
         self.gps_sat_max = int(self.get_parameter('gps_sat_max').value)
         self.capabilities_json = str(self.get_parameter('capabilities_json').value)
+
+        self.target_wp = (self.lat, self.lon, abs(self.rel_alt_m))  # initial target waypoint
 
         # sim state
         self.distance_m = 0.0
@@ -186,8 +189,19 @@ class MockUUVNode(Node):
 
     # ----------------- Waypoint helpers -----------------
     def adjust_waypoint(self, lat, lon, depth):
-        depth = max(0.0, depth)
-        return round(lat, 6), round(lon, 6), depth
+        # TODO add depth veto if too close to bottom
+        return optimal_waypoint.select_best_target(
+            target_lat=lat,
+            target_lon=lon,
+            target_depth_m=depth,
+            my_lat=self.lat,
+            my_lon=self.lon,
+            my_depth_m=abs(self.rel_alt_m),  # rel_alt_m is negative depth
+            my_heading_deg=self.heading_deg,
+            radius_m=100.0,  # sample radius around target
+            num_points=16,   # number of samples on the circle
+            weights=None     # use default equal weights
+        )
 
     def start_lawnmower(self, waypoints):
         self.current_waypoints = waypoints
@@ -202,44 +216,41 @@ class MockUUVNode(Node):
             return
 
         if self.mission_active and self.current_wp_index < len(self.current_waypoints):
-            # get target waypoint
-            tgt_lat, tgt_lon, tgt_depth = self.current_waypoints[self.current_wp_index]
-            tgt_lat, tgt_lon, tgt_depth = self.adjust_waypoint(tgt_lat, tgt_lon, tgt_depth)
+            # target is cached in self.target_wp (only changes when index changes)
+            tgt_lat, tgt_lon, tgt_depth = self.target_wp
 
-            # compute local ENU deltas (meters)
-            dx = (tgt_lon - self.lon) * DEG_LAT_M * math.cos(math.radians(self.lat))
+            # Use the same clamp as meters_to_deg_lon
+            coslat = max(0.1, math.cos(math.radians(self.lat)))
+            dx = (tgt_lon - self.lon) * DEG_LAT_M * coslat
             dy = (tgt_lat - self.lat) * DEG_LAT_M
-            dz = tgt_depth - abs(self.rel_alt_m)   # rel_alt_m is negative depth
+            dz = tgt_depth - abs(self.rel_alt_m)
 
             dist_horiz = math.hypot(dx, dy)
-            dist_3d = math.sqrt(dx*dx + dy*dy + dz*dz)
-
-            if dist_3d < 200.0:  # reached waypoint# when you reach a waypoint
-
-                # just after choosing the new target (or at the top of the loop)
-                if self.mission_active and self.current_wp_index < len(self.current_waypoints):
-                    nxt = self.current_waypoints[self.current_wp_index]
-
-                    self.current_wp_index += 1
-                    if self.current_wp_index >= len(self.current_waypoints):
-                        self.publish_log("Mission complete", "info")
-                        self.status = "MISSION_COMPLETE"
-                        self.mission_active = False
+            dist_vert  = abs(dz)
+            # tighter reach thresholds (tune as you like)
+            if (dist_horiz < 200.0) and (dist_vert < 100.0):
+                # advance index safely
+                self.current_wp_index += 1
+                if self.current_wp_index >= len(self.current_waypoints):
+                    self.publish_log("Mission complete", "info")
+                    self.status = "READY"
+                    self.mission_active = False
                     return
+                # select the next target ONCE
+                self._select_target_from_index()
+                return
 
-            # direction toward target
+            # steer toward current target
             self.heading_deg = math.degrees(math.atan2(dy, dx)) % 360.0
 
             # move horizontally at speed_mps
             vx = self.speed_mps * math.cos(math.radians(self.heading_deg))
             vy = self.speed_mps * math.sin(math.radians(self.heading_deg))
-            dlon = meters_to_deg_lon(vx * dt, self.lat)
-            dlat = meters_to_deg_lat(vy * dt)
-            self.lon += dlon
-            self.lat += dlat
+            self.lon += meters_to_deg_lon(vx * dt, self.lat)
+            self.lat += meters_to_deg_lat(vy * dt)
 
             # vertical motion: chase tgt_depth at same speed
-            climb_rate = self.speed_mps  # m/s
+            climb_rate = self.speed_mps
             depth_step = climb_rate * dt
             cur_depth = abs(self.rel_alt_m)
             if abs(tgt_depth - cur_depth) <= depth_step:
@@ -248,8 +259,7 @@ class MockUUVNode(Node):
                 cur_depth += math.copysign(depth_step, tgt_depth - cur_depth)
             self.rel_alt_m = -cur_depth
 
-            # track distance
-            self.distance_m += self.speed_mps * dt
+            # simple speed smoothing (commanded speed here)
             self.speed_filter = 0.8 * self.speed_filter + 0.2 * self.speed_mps
         else:
             # idle random walk
@@ -393,6 +403,12 @@ class MockUUVNode(Node):
             self.mission_active = False
             self.status = "rtl_landed"
             self.publish_log("RTL complete", "info")
+
+    def _select_target_from_index(self):
+        lat, lon, dep = self.current_waypoints[self.current_wp_index]
+        # Run your one-time “optimal” adjustment here
+        self.target_wp = self.adjust_waypoint(lat, lon, dep)
+
 
     def on_remote_id(self, msg: String):
         # Pass-through; just log reception
