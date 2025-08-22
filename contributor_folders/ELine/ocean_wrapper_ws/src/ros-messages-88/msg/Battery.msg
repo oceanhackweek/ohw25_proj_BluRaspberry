@@ -1,0 +1,5 @@
+std_msgs/Header header
+float64 percentage
+float64 estimated_current
+float64 amp_hours_left
+float64 flight_time_remaining

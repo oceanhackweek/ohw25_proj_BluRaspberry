@@ -1,0 +1,6 @@
+bool ardupilot
+bool enable_autonomy
+bool enable_exploration
+float32 max_dist_to_polygon
+---
+bool success

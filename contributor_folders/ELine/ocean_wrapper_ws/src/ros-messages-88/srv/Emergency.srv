@@ -1,0 +1,3 @@
+mavros_msgs/StatusText status
+---
+bool success

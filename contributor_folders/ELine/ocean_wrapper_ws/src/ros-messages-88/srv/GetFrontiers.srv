@@ -1,0 +1,6 @@
+geometry_msgs/Pose search_from
+geometry_msgs/Polygon polygon
+float32 max_altitude
+float32 min_altitude
+---
+FrontierList frontiers

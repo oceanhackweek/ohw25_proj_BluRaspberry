@@ -1,0 +1,12 @@
+std_msgs/Header header
+std_msgs/String uuid
+float32 altitude
+geometry_msgs/Polygon polygon
+float32 max_altitude
+float32 min_altitude
+---
+# result
+bool completed
+---
+# feedback
+float32 percent_complete

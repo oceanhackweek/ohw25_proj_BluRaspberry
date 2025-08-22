@@ -1,0 +1,5 @@
+std_msgs/Header header
+std_msgs/String current_status
+bool enable_autonomy
+bool enable_exploration
+std_msgs/String cmd_history

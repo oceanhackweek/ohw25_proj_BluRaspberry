@@ -1,0 +1,10 @@
+# Request
+string metric          # your "map key"
+float64 lat
+float64 lon
+float64 depth
+float64 stamp          # seconds (or ROS time converted to float)
+---
+# Response
+float64 value
+bool from_cache

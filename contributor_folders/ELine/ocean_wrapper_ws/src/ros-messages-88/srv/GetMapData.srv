@@ -1,0 +1,12 @@
+geometry_msgs/Point map_position
+uint8 width
+uint8 height
+bool adjust_params
+---
+sensor_msgs/Image tif_mat
+float64 home_offset
+float64 ret_altitude
+float64 target_altitude
+float64 min_altitude
+float64 max_altitude
+bool success

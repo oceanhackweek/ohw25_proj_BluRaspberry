@@ -1,0 +1,6 @@
+geometry_msgs/Pose input_goal
+float64 max_dist
+float64 min_altitude
+float64 max_altitude
+---
+geometry_msgs/Pose output_goal

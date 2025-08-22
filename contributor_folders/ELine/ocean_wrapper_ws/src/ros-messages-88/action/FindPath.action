@@ -1,0 +1,11 @@
+std_msgs/Header header
+std_msgs/String uuid
+float32 min_altitude
+float32 max_altitude
+geometry_msgs/Point goal
+---
+# result
+bool completed
+---
+# feedback
+nav_msgs/Path path

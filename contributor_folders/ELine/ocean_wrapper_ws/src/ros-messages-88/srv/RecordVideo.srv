@@ -1,0 +1,4 @@
+string filename
+bool start
+---
+bool success

@@ -1,0 +1,10 @@
+std_msgs/Header header
+std_msgs/String uuid
+float32 altitude
+geometry_msgs/Point point
+---
+# result
+bool completed
+---
+# feedback
+float32 distance_remaining
