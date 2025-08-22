@@ -52,20 +52,25 @@ We aim to develop a system that determine the real-time optimal path for an UUV 
 - Gazebo
 
 **Simulated Ocean field**
-- OCIM (Ocean Circulation Inverse Model): A global ocean circulation inverse model that estimates large-scale transport and tracer distributions using observational constraints. We use 2° × 2° horizonal resolution and 24 layer.
-- Global Ocean Physics Analysis and Forecast: Dataset provides comprehensive, high-resolution ocean state estimates, based on the NEMO (Nucleus for European Modelling of the Ocean) model, a state-of-the-art ocean general circulation model that simulates three-dimensional ocean dynamics, thermodynamics, and sea-ice interactions, assimilating observations to produce accurate analyses and forecasts of the global ocean state. We use 1/12° resolution in the upper 1000 m with a three-day averaging.
+- **OCIM** (Ocean Circulation Inverse Model): A global ocean circulation inverse model that estimates large-scale transport and tracer distributions using observational constraints. We use 2° × 2° horizonal resolution and 24 layer.
+- **Global Ocean Physics Analysis and Forecast**: Dataset provides comprehensive, high-resolution ocean state estimates, based on the NEMO (Nucleus for European Modelling of the Ocean) model, a state-of-the-art ocean general circulation model that simulates three-dimensional ocean dynamics, thermodynamics, and sea-ice interactions, assimilating observations to produce accurate analyses and forecasts of the global ocean state. We use 1/12° resolution in the upper 1000 m with a three-day averaging.
 
-**Region of interest and time range**
-- The Gulf Stream in North Atlantic, (lat, lon)
-- xx,xx-xx, 2025
+**Region and time**
+- Gulf Stream, North Atlantic (30°–45°N, 70°–60°E)
+- 3-day average: July 1–3, 2025
 
 **Score function**
-develop the score function based on different considerations, including
-- efficiency: utilize ocean current velocity (u,v,w)
-- biological insteret: Gradient of Apparent Oxygen Utilization (AOU). Larger gradient, higer score. AOU is calculated based on temperature and salinity.
+Develop the score function based on different considerations, including
+- Efficiency: utilize ocean geostrophic current velocity (u,v)
+- Biological insteret: gradient of Apparent Oxygen Utilization (AOU). Larger gradient, higer score. AOU is calculated based on temperature and salinity.
 
 
 ## Workflow/Roadmap
+
+
+
+
+
 
 ## Results/Findings
 
