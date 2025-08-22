@@ -1,7 +1,17 @@
 import math
 from typing import Tuple, Dict, Optional, List
+import rclpy
+import threading
 
 DEG_LAT_M = 111_320.0  # meters per degree latitude (coarse WGS84 approximation)
+
+from messages_88.srv import GetOceanScore 
+
+# Internal singletons (hidden; your external API stays functional)
+__node = None
+__cli = None
+__lock = threading.Lock()
+__TIMEOUT = 3.0  # seconds
 
 def select_best_target(
     target_lat: float,
@@ -143,26 +153,48 @@ def angular_difference_deg(a_deg: float, b_deg: float) -> float:
 # ROS2 service stubs
 # ---------------------------
 
+def __ensure_client():
+    """Lazily init rclpy, a tiny client node, and the /ocean_decision client."""
+    global __node, __cli
+    with __lock:
+        if not rclpy.ok():
+            rclpy.init(args=None)
+        if __node is None:
+            __node = rclpy.create_node('ocean_decision_client')
+        if __cli is None:
+            __cli = __node.create_client(GetOceanScore, 'ocean_decision')
+            __cli.wait_for_service(timeout_sec=__TIMEOUT)
+
+def __score(metric: str, lat: float, lon: float, depth_m: float, stamp: float = 0.0) -> Optional[float]:
+    """Call /ocean_decision for a single scalar metric. Return float or None on failure."""
+    __ensure_client()
+    req = GetOceanScore.Request()
+    req.metric = metric
+    req.lat = float(lat)
+    req.lon = float(lon)
+    req.depth = float(depth_m)
+    req.stamp = float(stamp)
+
+    fut = __cli.call_async(req)
+    ok = rclpy.spin_until_future_complete(__node, fut, timeout_sec=__TIMEOUT)
+    if not ok or fut.result() is None:
+        return None
+    return float(fut.result().value)
+
 def get_algal_bloom_probability(lat: float, lon: float, depth_m: float) -> Optional[float]:
     """
-    STUB: Replace with a ROS2 service call to obtain algal bloom probability at (lat,lon,depth).
-    Expected return: float in [0,1]. Return None if unavailable.
-    Example integration sketch (pseudo-code):
-        import rclpy
-        from my_msgs.srv import BloomProb
-        ...
-        client.call_async(BloomProb.Request(lat=lat, lon=lon, depth=depth_m))
+    Calls /ocean_decision with metric='algae'.
+    Returns float in [0,1] or None if unavailable (your caller already treats None as neutral 0.5).
     """
-    raise NotImplementedError("Connect to ROS2 service for algal bloom probability")
+    return __score('algae', lat, lon, depth_m, 0.0)
 
 def get_current_vector(lat: float, lon: float, depth_m: float) -> Tuple[float, float]:
     """
-    STUB: Replace with a ROS2 service call to obtain local water current vector at (lat,lon,depth).
-    Expected return: (u_east, v_north) in m/s.
-    Example integration sketch (pseudo-code):
-        import rclpy
-        from my_msgs.srv import Currents
-        ...
-        client.call_async(Currents.Request(lat=lat, lon=lon, depth=depth_m))
+    Calls /ocean_decision twice ('current_u' and 'current_v') and returns (u_east, v_north) in m/s.
+    On failure, raises NotImplementedError so your existing try/except path stays the same.
     """
-    raise NotImplementedError("Connect to ROS2 service for currents (east/north)")
+    u = __score('current_u', lat, lon, depth_m, 0.0)
+    v = __score('current_v', lat, lon, depth_m, 0.0)
+    if u is None or v is None:
+        raise NotImplementedError("currents unavailable")
+    return (u, v)
