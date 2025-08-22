@@ -23,7 +23,7 @@ def get_o2_age(lon, lat, depth, method='linear'):
     age : float
         Interpolated water age
     """
-    OCIM_nc_file = 'OCIM_model_output.nc'
+    OCIM_nc_file = 'ds_OCIM_struct.nc' # in 'data' folder, update with your nc file if needed
     ds = xr.open_dataset(OCIM_nc_file)
 
     # Interpolation
