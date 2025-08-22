@@ -1,23 +1,14 @@
 # BluRaspberry
-Optimal AUV Path Planning Using Numerical Ocean Models
+Optimal Autonomous Underwater Vehicles(AUVs) Path Planning
 
 **Folder Structure**
+* `final_notebooks` Notebooks that you can check out if you interested in the process or reproduce what we did.
+* `data` Dataset are shared here.
 
-* `contributor_folders` (optional) Each contributor can make a folder here and 
-push their work here during the week. This will allow everyone to see each others work but prevent any merge conflicts. It is good if participants are new to collaborative coding.
-* `final_notebooks` When the team develops shared final notebooks, they 
-can be shared here. Make sure to communicate so that you limit merge conflicts.
-* `scripts` Shared scripts or functions can be added here.
-* `data` Shared dataset can be shared here. Note, do not put large datasets on GitHub. Speak to the organizers if you 
-need to share large datasets. Each team member can have a version of the dataset locally in the same folder to 
-preserve relative paths, but the dataset does not need to be added to git/GitHub (you can use `.gitignore`).
-
-You can start with a simple structure and as you progress you can refine it to contain more components. [Here](https://cookiecutter-data-science.drivendata.org/#directory-structure) is an example of a more elaborate structure for a data science project.
+<!--More elaborate structure for a data science project: [Here](https://cookiecutter-data-science.drivendata.org/#directory-structure) is an example of a more elaborate structure for a data science project.-->
 
 ## One-line Description
-Our goal is to develop a system that specifies an optimal path for an AUV using numerical circulation models.
-
-## Planning
+We aim to develop a system that determine the real-time optimal path for an AUV to explore biologically active regions across a transect of North Atlantic.
 
 ## Collaborators
 
@@ -30,11 +21,9 @@ Our goal is to develop a system that specifies an optimal path for an AUV using 
 
 ## Planning
 
-* Initial idea: "short description"
-* Ideation jam board: Add link
-* Ideation Presentation: Add link
+* Initial idea: use numerical model outputs to simulate potential scenarios for the UUV
+* Ideation jam board: [link](https://www.figma.com/board/mTpn6HdqrURccqMxZJdo3D/blue-raspberry?node-id=0-1&t=hRSpES27tXPrWp6H-1)
 * Slack channel: #ohw25_proj_blu_raspberry
-* Project google drive: Add link
 * Final presentation: Add link
 
 ## Background
@@ -58,8 +47,18 @@ Our goal is to develop a system that specifies an optimal path for an AUV using 
 - Gazebo
 
 **Simulated Ocean field**
-- OCIM (Ocean Circulation Inverse Model)
-- ROMs
+- OCIM (Ocean Circulation Inverse Model): A global ocean circulation inverse model that estimates large-scale transport and tracer distributions using observational constraints. We use 2° × 2° horizonal resolution and 24 layer.
+- HYCOM: A high-resolution ocean circulation model that simulates three-dimensional ocean dynamics by blending isopycnal, terrain-following, and z-level coordinates. We use xxx resolution in the upper 1000 m.
+
+**Region of interest and time range**
+- The Gulf Stream in North Atlantic, (lat, lon)
+- xx,xx-xx, 2025
+
+**Score function**
+develop the score function based on different considerations, including
+- efficiency: utilize ocean current velocity (u,v,w)
+- biological insteret: Gradient of Apparent Oxygen Utilization (AOU). Larger gradient, higer score. AOU is calculated based on temperature and salinity.
+
 
 ## Workflow/Roadmap
 
