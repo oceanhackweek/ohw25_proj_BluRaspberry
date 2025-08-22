@@ -72,7 +72,14 @@ Develop the score function based on different considerations, including
 
 ## Results/Findings
 
+[Watch the 1000 m/s vehicle flying in the ocean](contributor_folders/JCai/OHW-video.mp4)
+
 ## Lessons Learned
 
 ## References
+
+1. DeVries, T., & Deutsch, C. (2014). Large-scale variations in the stoichiometry of marine organic matter respiration. Nature Geoscience, 7(12), 890-894.
+2. Global Ocean Physics Analysis and Forecast. E.U. Copernicus Marine Service Information (CMEMS). Marine Data Store (MDS). DOI: 10.48670/moi-00016 (Accessed on 21-08-2025)
+3. Garcia, H. E., & Gordon, L. I. (1992). Oxygen solubility in seawater: Better fitting equations. Limnology and oceanography, 37(6), 1307-1312.
+
 
