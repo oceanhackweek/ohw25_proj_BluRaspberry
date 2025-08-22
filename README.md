@@ -1,5 +1,8 @@
 # BluRaspberry
-Optimal Autonomous Underwater Vehicles(AUVs) Path Planning
+**B**iogeochemistry **L**awnmower **U**UV - Raspberry Pi
+
+Optimal Unmanned underwater vehicles (UUVs) Path Planning
+<br><br><br>
 
 **Folder Structure**
 * `final_notebooks` Notebooks that you can check out if you interested in the process or reproduce what we did.
@@ -8,7 +11,7 @@ Optimal Autonomous Underwater Vehicles(AUVs) Path Planning
 <!--More elaborate structure for a data science project: [Here](https://cookiecutter-data-science.drivendata.org/#directory-structure) is an example of a more elaborate structure for a data science project.-->
 
 ## One-line Description
-We aim to develop a system that determine the real-time optimal path for an AUV to explore biologically active regions across a transect of North Atlantic.
+We aim to develop a system that determine the real-time optimal path for an UUV to explore biologically active regions across a transect of North Atlantic.
 
 ## Collaborators
 
@@ -30,25 +33,27 @@ We aim to develop a system that determine the real-time optimal path for an AUV 
 
 ## Goals
 **Optimization Function for Path Planning**
-- Develop an algorithm that dynamically adjusts AUV navigation points to maximize sampling efficiency of biological targets (e.g., algal blooms).
-- Incorporate environmental variables such as currents, temperature, salinity, oxygen utilization, water age, and seafloor distribution.
+- Develop an algorithm that dynamically adjusts UUV navigation points to maximize sampling efficiency of biological targets (e.g., algal blooms) in the North Atlantic.
+- Incorporate environmental variables such as geostrophic currents, temperature, salinity, oxygen utilization, water age, and seafloor distribution.
 
 **Integration with Robotic Control Systems**
-- Build scripts to interface between Python-based optimization functions and ROS2, potential enabling direct deployment on AUV platforms.
+- Create scripts to connect Python-based optimization functions with ROS2, enabling potential direct deployment on UUV platforms.
+- Containerize ROS simulations using Docker for reproducibility and open-source use.
 - Ensure compatibility with Gazebo for simulation testing.
 
-**Scalable Cloud Implementation**
-- Run scripts on large oceanographic datasets in cloud environments .
+**Targeted Data Acquisition**
+- Implement a scripted workflow to extract only the necessary oceanographic model data, avoiding full global downloads.
+- Download selected variables from the MERCATOR global ocean reanalysis for a defined region, time range, and depth, saving them locally as netCDF files.
 
 
 ## Datasets and Methodology
-**AUV Control and Simulation**
+**UUV Control and Simulation**
 - ROS2
 - Gazebo
 
 **Simulated Ocean field**
 - OCIM (Ocean Circulation Inverse Model): A global ocean circulation inverse model that estimates large-scale transport and tracer distributions using observational constraints. We use 2° × 2° horizonal resolution and 24 layer.
-- HYCOM: A high-resolution ocean circulation model that simulates three-dimensional ocean dynamics by blending isopycnal, terrain-following, and z-level coordinates. We use xxx resolution in the upper 1000 m.
+- Global Ocean Physics Analysis and Forecast: Dataset provides comprehensive, high-resolution ocean state estimates, based on the NEMO (Nucleus for European Modelling of the Ocean) model, a state-of-the-art ocean general circulation model that simulates three-dimensional ocean dynamics, thermodynamics, and sea-ice interactions, assimilating observations to produce accurate analyses and forecasts of the global ocean state. We use 1/12° resolution in the upper 1000 m with a three-day averaging.
 
 **Region of interest and time range**
 - The Gulf Stream in North Atlantic, (lat, lon)
