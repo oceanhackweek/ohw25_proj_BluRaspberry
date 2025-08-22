@@ -67,9 +67,7 @@ Develop the score function based on different considerations, including
 
 ## Workflow/Roadmap
 
-
-
-
+<img src="contributor_folders/JCai/workflow.png" alt="Diagram of workflow" style="float:left; margin-right:20px; width:300px;" />
 
 
 ## Results/Findings
