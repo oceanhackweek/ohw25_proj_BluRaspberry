@@ -1,14 +1,14 @@
 # BluRaspberry
-Optimal unmanned underwater vehicle (UUV) Path Planning Using Numerical Ocean Models
+Optimal Autonomous Underwater Vehicles(AUVs) Path Planning
 
 **Folder Structure**
-* `final_notebooks` Notebook that you can check out if you interested in the process or reproduce what we did.
-* `data` Dataset can be shared here.
+* `final_notebooks` Notebooks that you can check out if you interested in the process or reproduce what we did.
+* `data` Dataset are shared here.
 
 <!--More elaborate structure for a data science project: [Here](https://cookiecutter-data-science.drivendata.org/#directory-structure) is an example of a more elaborate structure for a data science project.-->
 
 ## One-line Description
-We aim to develop a system that determine the optimal path for an AUV to explore biologically active regions (e.g., algal blooms).
+We aim to develop a system that determine the real-time optimal path for an AUV to explore biologically active regions across a transect of North Atlantic.
 
 ## Collaborators
 
@@ -47,8 +47,18 @@ We aim to develop a system that determine the optimal path for an AUV to explore
 - Gazebo
 
 **Simulated Ocean field**
-- OCIM (Ocean Circulation Inverse Model)
-- ROMs
+- OCIM (Ocean Circulation Inverse Model): A global ocean circulation inverse model that estimates large-scale transport and tracer distributions using observational constraints. We use 2° × 2° horizonal resolution and 24 layer.
+- HYCOM: A high-resolution ocean circulation model that simulates three-dimensional ocean dynamics by blending isopycnal, terrain-following, and z-level coordinates. We use xxx resolution in the upper 1000 m.
+
+**Region of interest and time range**
+- The Gulf Stream in North Atlantic, (lat, lon)
+- xx,xx-xx, 2025
+
+**Score function**
+develop the score function based on different considerations, including
+- efficiency: utilize ocean current velocity (u,v,w)
+- biological insteret: Gradient of Apparent Oxygen Utilization (AOU). Larger gradient, higer score. AOU is calculated based on temperature and salinity.
+
 
 ## Workflow/Roadmap
 

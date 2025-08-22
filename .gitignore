@@ -1,3 +1,8 @@
+
+# pixi environments
+.pixi
+*.egg-info
+
 contributor_folders/ELine/.env/*
 
 contributor_folders/ELine/ocean_wrapper_ws/build/
@@ -5,3 +10,4 @@ contributor_folders/ELine/ocean_wrapper_ws/install/
 contributor_folders/ELine/ocean_wrapper_ws/log/
 
 contributor_folders/ELine/.vscode/*
+

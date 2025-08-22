@@ -1,0 +1,6 @@
+[submodule "contributor_folders/ELine/open-drone-frontend"]
+	path = contributor_folders/ELine/open-drone-frontend
+	url = git@github.com:robotics-88/open-drone-frontend.git
+[submodule "contributor_folders/ELine/open-drone-server"]
+	path = contributor_folders/ELine/open-drone-server
+	url = git@github.com:robotics-88/open-drone-server.git
