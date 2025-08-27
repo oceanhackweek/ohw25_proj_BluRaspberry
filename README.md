@@ -27,7 +27,7 @@ We aim to develop a system that determine the real-time optimal path for an UUV 
 * Initial idea: use numerical model outputs to simulate potential scenarios for the UUV
 * Ideation jam board: [link](https://www.figma.com/board/mTpn6HdqrURccqMxZJdo3D/blue-raspberry?node-id=0-1&t=hRSpES27tXPrWp6H-1)
 * Slack channel: #ohw25_proj_blu_raspberry
-* Final presentation: Add link
+* Final presentation: Check out the first 13 mins :) [link](https://www.youtube.com/watch?v=a0UlJTmM2-U)
 
 ## Background
 
